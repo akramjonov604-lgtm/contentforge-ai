@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <title>ContentForge AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Custom config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            glass: "rgba(255,255,255,0.08)"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white flex justify-center">
+
+  <div class="w-full max-w-4xl px-4 py-10">
+    <!-- Header -->
+    <h1 class="text-4xl font-extrabold text-center mb-2">
+      🚀 ContentForge <span class="text-blue-400">AI</span>
+    </h1>
+    <p class="text-center text-gray-400 mb-8">
+      Bir prompt — viral kontent. Gemini AI bilan ⚡
+    </p>
+
+    <!-- Card -->
+    <div class="bg-glass backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
+
+      <!-- Topic -->
+      <textarea id="topic"
+        class="w-full h-28 p-4 rounded-xl bg-black/40 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+        placeholder="Masalan: motivatsion video, 30 soniya"></textarea>
+
+      <!-- Options -->
+      <div class="grid grid-cols-2 gap-4 mt-4">
+        <select id="platform" class="p-3 rounded-xl bg-black/40 border border-white/10">
+          <option>TikTok</option>
+          <option>Instagram Reels</option>
+          <option>YouTube Shorts</option>
+        </select>
+
+        <select id="lang" class="p-3 rounded-xl bg-black/40 border border-white/10">
+          <option>Uzbek</option>
+          <option>Russian</option>
+          <option>English</option>
+        </select>
+      </div>
+
+      <!-- Button -->
+      <button onclick="generate()"
+        class="mt-5 w-full py-4 rounded-xl font-bold text-lg
+               bg-gradient-to-r from-blue-600 to-indigo-600
+               hover:scale-[1.02] transition">
+        ⚡ Generate Content
+      </button>
+    </div>
+
+    <!-- Output -->
+    <div id="output" class="mt-8 space-y-4"></div>
+
+    <!-- History -->
+    <h2 class="text-xl mt-10 mb-3 text-gray-300">🕘 History</h2>
+    <div id="history" class="text-sm text-gray-400 space-y-1"></div>
+  </div>
+
+<script>
+async function generate() {
+  const topic = document.getElementById("topic").value.trim();
+  if (!topic) {
+    alert("Mavzuni yoz");
+    return;
+  }
+
+  const output = document.getElementById("output");
+  output.innerText = "⏳ Generating...";
+
+  try {
+    const res = await fetch(
+      "https://still-sunset-ca95.muxtorbek715.workers.dev",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt: `TikTok uchun motivatsion video yarat.
+Mavzu: ${topic}
+
+HOOK:
+SCRIPT:
+CAPTION:
+HASHTAGS:
+BEST POST TIME:`
+        })
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Server error: " + res.status);
+    }
+
+    const data = await res.json();
+
+    if (!data || !data[0] || !data[0].generated_text) {
+      throw new Error("Javob kelmadi");
+    }
+
+    output.innerText = data[0].generated_text;
+
+  } catch (e) {
+    output.innerText = "❌ Xato: " + e.message;
+  }
+}
+
+
+/* ================= RENDER ================= */
+function renderBlocks(text) {
+  const sections = text.split("\n").filter(l => l.trim() !== "");
+
+  document.getElementById("output").innerHTML = sections.map(line => `
+    <div class="bg-glass border border-white/10 rounded-xl p-4">
+      <div class="flex justify-between mb-1">
+        <span class="font-semibold text-blue-400">${line.split(":")[0]}</span>
+        <button onclick="copyText(\`${line}\`)" class="text-xs text-gray-400 hover:text-white">Copy</button>
+      </div>
+      <p class="text-gray-200 whitespace-pre-line">${line.replace(/^[^:]+:/, "").trim()}</p>
+    </div>
+  `).join("");
+}
+
+/* ================= HELPERS ================= */
+function setOutput(text) {
+  document.getElementById("output").innerHTML =
+    `<div class="text-center text-gray-400">${text}</div>`;
+}
+
+function copyText(t) {
+  navigator.clipboard.writeText(t);
+}
+
+function saveHistory(topic) {
+  let h = JSON.parse(localStorage.getItem("history") || "[]");
+  h.unshift(topic);
+  h = h.slice(0, 6);
+  localStorage.setItem("history", JSON.stringify(h));
+  renderHistory();
+}
+
+function renderHistory() {
+  const h = JSON.parse(localStorage.getItem("history") || "[]");
+  document.getElementById("history").innerHTML =
+    h.map(i => "• " + i).join("<br>");
+}
+
+function platformValue() {
+  return document.getElementById("platform").value;
+}
+function langValue() {
+  return document.getElementById("lang").value;
+}
+
+renderHistory();
+</script>
+</body>
+</html>
