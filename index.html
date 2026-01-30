@@ -73,89 +73,15 @@
     <div id="history" class="text-sm text-gray-400 space-y-1"></div>
   </div>
 
-<script>
-async function generate() {
-  const topic = document.getElementById("topic").value.trim();
-  if (!topic) return alert("Mavzuni yoz jigar 😄");
-
-  document.getElementById("output").innerText = "⏳ Generating...";
-
-  try {
-const res = await fetch(
-  "https://still-sunset-ca95.muxtorbek715.workers.dev",
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      prompt: `TikTok uchun motivatsion video yarat.
-Mavzu: ${topic}
-
-HOOK:
-SCRIPT:
-CAPTION:
-HASHTAGS:
-BEST POST TIME:`
-    })
-  }
-);
-
-const data = await res.json();
-document.getElementById("output").innerText = data.text;
-
-  } catch (e) {
-    document.getElementById("output").innerText =
-      "❌ Xato: " + e.message;
-  }
+<script>async function go(){
+  const r = await fetch("https://<WORKER_URL>.workers.dev", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ prompt: document.getElementById("t").value })
+  });
+  const d = await r.json();
+  document.getElementById("o").innerText = d.text;
 }
-
-
-/* ================= RENDER ================= */
-function renderBlocks(text) {
-  const sections = text.split("\n").filter(l => l.trim() !== "");
-
-  document.getElementById("output").innerHTML = sections.map(line => `
-    <div class="bg-glass border border-white/10 rounded-xl p-4">
-      <div class="flex justify-between mb-1">
-        <span class="font-semibold text-blue-400">${line.split(":")[0]}</span>
-        <button onclick="copyText(\`${line}\`)" class="text-xs text-gray-400 hover:text-white">Copy</button>
-      </div>
-      <p class="text-gray-200 whitespace-pre-line">${line.replace(/^[^:]+:/, "").trim()}</p>
-    </div>
-  `).join("");
-}
-
-/* ================= HELPERS ================= */
-function setOutput(text) {
-  document.getElementById("output").innerHTML =
-    `<div class="text-center text-gray-400">${text}</div>`;
-}
-
-function copyText(t) {
-  navigator.clipboard.writeText(t);
-}
-
-function saveHistory(topic) {
-  let h = JSON.parse(localStorage.getItem("history") || "[]");
-  h.unshift(topic);
-  h = h.slice(0, 6);
-  localStorage.setItem("history", JSON.stringify(h));
-  renderHistory();
-}
-
-function renderHistory() {
-  const h = JSON.parse(localStorage.getItem("history") || "[]");
-  document.getElementById("history").innerHTML =
-    h.map(i => "• " + i).join("<br>");
-}
-
-function platformValue() {
-  return document.getElementById("platform").value;
-}
-function langValue() {
-  return document.getElementById("lang").value;
-}
-
-renderHistory();
 </script>
 </body>
 </html>
